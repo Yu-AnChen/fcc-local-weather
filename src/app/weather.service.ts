@@ -16,7 +16,7 @@ export class WeatherService {
 
 	getWeather(latitude, longitude): Observable<any> {
 		// openweathermap API https://openweathermap.org/current
-		let url = 'http://api.openweathermap.org/data/2.5/weather';
+		let url = 'https://cors-anywhere.herokuapp.com/http://api.openweathermap.org/data/2.5/weather';
 		let params = new URLSearchParams();
 		params.set('appid', '65f8e732df4b70351096a4d8ed83ada0');
 		params.set('format', 'json');
