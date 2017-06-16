@@ -1,0 +1,14 @@
+<div class="square-wrapper"
+	[ngStyle]="{'background-image': 'url('+setBgImg()+')'}">
+	<div class="box-content flex-center-column">
+		<p>{{weather.sys.country}}</p>
+		<h2>{{weather.name}}</h2>
+		<h3>{{weather.weather[0].main}}</h3>
+	</div>
+</div>
+<div class="flex-center-row align-baseline">
+	<h3 id="temperature">{{temp}}&deg;</h3>
+	<a (click)="toggleTempUnit()">
+		<span [ngClass]="{'fade': tempUnitCelsius}">F</span>/<span [ngClass]="{'fade': !tempUnitCelsius}">C</span>
+	</a>
+</div>
