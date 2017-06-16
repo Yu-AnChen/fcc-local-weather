@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,700')
+
+$bodyBgColor: #ffc5c5;
+$accentColor: indianred;
+$textColor: #202020;
+$textColorAccent: white;
+$fontFamily: 'Rubik', sans-serif
+$letterSp1: 0.025em;
+
+@mixin linx ($link, $visit, $hover, $active)
+  	a
+    	color: $link
+    	&:visited
+      		color: $visit
+   		&:hover
+      		color: $hover
+    	&:active
+      		color: $active
