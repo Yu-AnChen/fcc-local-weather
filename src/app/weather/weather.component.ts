@@ -26,10 +26,14 @@ export class WeatherComponent implements OnInit {
 			this.weather.dt > this.weather.sys.sunrise &&
 			this.weather.dt < this.weather.sys.sunset ?
 			'day' : 'night';
-		let mainWeather = this.weather.weather[0].main;
-
-		// console.log(`${this.weather.name}, ${dayOrNight}time, weather: ${mainWeather}`);
-		return `${window.location.href}assets/img/${dayOrNight}/${this.ref[mainWeather]}.png`;
+		let icon;
+		let weatherCode = this.weather.weather[0].id.toString();
+		if (weatherCode === '800') {
+			icon = this.ref['800'];
+		} else {
+			icon = this.ref[weatherCode[0]];
+		}
+		return `${window.location.href}assets/img/${dayOrNight}/${icon}.png`;
 	}
 
 	setTemperature(isInCelsius: boolean) {
