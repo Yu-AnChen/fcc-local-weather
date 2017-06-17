@@ -29,7 +29,7 @@ export class WeatherComponent implements OnInit {
 		let mainWeather = this.weather.weather[0].main;
 
 		// console.log(`${this.weather.name}, ${dayOrNight}time, weather: ${mainWeather}`);
-		return `/assets/img/${dayOrNight}/${this.ref[mainWeather]}.png`;
+		return `${window.location.href}assets/img/${dayOrNight}/${this.ref[mainWeather]}.png`;
 	}
 
 	setTemperature(isInCelsius: boolean) {
