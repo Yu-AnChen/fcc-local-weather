@@ -2,12 +2,25 @@ import { Component, OnInit } from '@angular/core';
 import { WeatherService } from './weather.service';
 
 import { Subscription } from 'rxjs/Subscription';
+import { style, state, animate, transition, trigger } from '@angular/animations';
 
 @Component({
 	selector: 'app-root',
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.sass'],
-	providers: [WeatherService]
+	providers: [WeatherService],
+	animations: [
+		trigger('fadeInOut', [
+			state('in', style({ opacity: 1 })),
+			transition('void => *', [
+				style({ opacity: 0 }),
+				animate(1500)
+			]),
+			transition('* => void', [
+				animate(0, style({ opacity: 0 }))
+			])
+		])
+	]
 })
 export class AppComponent implements OnInit {
 	title = 'Weather';
@@ -16,7 +29,9 @@ export class AppComponent implements OnInit {
 	geolocaltionErrMsg;
 	isGettingGeo;
 	statusMsg;
-	actionDelayed = 4000;
+	actionDelayed = 2000;
+	geoposition;
+	refreshAnimation;
 
 	constructor(private weatherService: WeatherService) { }
 
@@ -28,6 +43,7 @@ export class AppComponent implements OnInit {
 
 	getLocation() {
 		this.isGettingGeo = true;
+		this.refreshAnimation = 'spin';
 		this.statusMsg = 'Fetching Current Geolocation';
 		if (navigator.geolocation) {
 			return setTimeout(() =>
@@ -39,8 +55,11 @@ export class AppComponent implements OnInit {
 		} else {
 			this.geolocaltionErrMsg = 'Geolocation is not supported by this browser.';
 			console.info(this.geolocaltionErrMsg);
-			return setTimeout(() =>
-				this._getWeatherAndSubscribe(-1, -1),
+			return setTimeout(() => {
+				this.geoposition = [-1, -1];
+				this._getWeatherAndSubscribe(this.geoposition);
+			}
+				,
 				this.actionDelayed);
 		}
 	}
@@ -48,7 +67,8 @@ export class AppComponent implements OnInit {
 	getWeatherWithCurrentPosition(position) {
 		console.log('getting geolocaion');
 		console.log(position);
-		return this._getWeatherAndSubscribe(position.coords.latitude, position.coords.longitude);
+		this.geoposition = [position.coords.latitude, position.coords.longitude];
+		return this._getWeatherAndSubscribe(this.geoposition);
 	}
 
 	getGeolocationError(error) {
@@ -69,11 +89,19 @@ export class AppComponent implements OnInit {
 		}
 		this.geolocaltionErrMsg = msg;
 		console.info(this.geolocaltionErrMsg);
-		return this._getWeatherAndSubscribe(-1, -1);
+		this.geoposition = [-1, -1];
+		return this._getWeatherAndSubscribe(this.geoposition);
 	}
 
-	_getWeatherAndSubscribe(lat, lon) {
+	refresh() {
+		if (!this.weatherOverView) return;
+		return this._getWeatherAndSubscribe(this.geoposition);
+
+	}
+	_getWeatherAndSubscribe([lat, lon]) {
+		this.weatherOverView = null;
 		this.isGettingGeo = false;
+		this.refreshAnimation = 'spin';
 		let randomCityText = '';
 		if (lat === -1 && lon === -1) {
 			randomCityText = ' of A Major Random City';
@@ -86,6 +114,7 @@ export class AppComponent implements OnInit {
 				setTimeout(() => {
 					this.weatherOverView = data;
 					this.keysOfWeatherOverView = Object.keys(data);
+					this.refreshAnimation = '';
 				}, this.actionDelayed);
 			});
 	}
