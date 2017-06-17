@@ -1,8 +1,16 @@
 <div class="container">
 	<div class="content">
-		<h1>
-			{{title}}
-		</h1>
+		<div id="content-header">
+			<h1>
+				{{title}}
+			</h1>
+			<a id="refresh-btn"
+				(click)="refresh()"
+				class="flex-center-column">
+				<fa *ngIf="weatherOverView" name="refresh" animation="" size="2x"></fa>
+				<fa *ngIf="!weatherOverView" name="refresh" animation="spin" size="2x" class="disabled"></fa>
+			</a>
+		</div>
 		<hr>
 		<div id="content-body" class="flex-center-column">
 			<div id="errorMsg" *ngIf="geolocaltionErrMsg">{{geolocaltionErrMsg}}</div>
@@ -16,6 +24,7 @@
 
 			<app-weather
 				*ngIf="weatherOverView"
+				[@fadeInOut]="weatherOverView"
 				[weather]="weatherOverView">
 			</app-weather>
 		</div>
