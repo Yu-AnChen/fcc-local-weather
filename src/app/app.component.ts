@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { WeatherService } from './weather.service';
 
 import { Subscription } from 'rxjs/Subscription';
@@ -22,53 +22,48 @@ import { style, state, animate, transition, trigger } from '@angular/animations'
 		])
 	]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 	title = 'Weather';
-	weatherOverView;
-	keysOfWeatherOverView;
-	geolocaltionErrMsg;
-	isGettingGeo;
-	statusMsg;
 	actionDelayed = 2000;
-	geoposition;
-	refreshAnimation;
+	weatherOverView;
+	statusMsg: string;
+	geolocaltionErrMsg: string;
+	isGettingGeo: boolean;
+	latLonArr;
+	isRefreshing: boolean;
+	subscription: Subscription;
 
 	constructor(private weatherService: WeatherService) { }
 
 	ngOnInit() {
 		this.getLocation();
-		// this.statusMsg = 'Fetching Current Geolocation';
-		// this.geolocaltionErrMsg = 'Geolocation is not supported by this browser.';
 	}
 
 	getLocation() {
 		this.isGettingGeo = true;
-		this.refreshAnimation = 'spin';
+		this.isRefreshing = true;
 		this.statusMsg = 'Fetching Current Geolocation';
-		if (navigator.geolocation) {
-			return setTimeout(() =>
-				navigator.geolocation
-					.getCurrentPosition(
-					position => this.getWeatherWithCurrentPosition(position),
-					error => this.getGeolocationError(error)
-					), this.actionDelayed);
-		} else {
+
+		if (!navigator.geolocation) {
 			this.geolocaltionErrMsg = 'Geolocation is not supported by this browser.';
-			console.info(this.geolocaltionErrMsg);
 			return setTimeout(() => {
-				this.geoposition = [-1, -1];
-				this._getWeatherAndSubscribe(this.geoposition);
-			}
-				,
-				this.actionDelayed);
+				this.latLonArr = [-1, -1];
+				this._getWeatherAndSubscribe(this.latLonArr);
+			}, this.actionDelayed);
 		}
+		return setTimeout(() =>
+			navigator.geolocation
+				.getCurrentPosition(
+				position => this.getWeatherWithCurrentPosition(position),
+				error => this.getGeolocationError(error)
+				),
+			this.actionDelayed
+		);
 	}
 
 	getWeatherWithCurrentPosition(position) {
-		console.log('getting geolocaion');
-		console.log(position);
-		this.geoposition = [position.coords.latitude, position.coords.longitude];
-		return this._getWeatherAndSubscribe(this.geoposition);
+		this.latLonArr = [position.coords.latitude, position.coords.longitude];
+		return this._getWeatherAndSubscribe(this.latLonArr);
 	}
 
 	getGeolocationError(error) {
@@ -88,20 +83,24 @@ export class AppComponent implements OnInit {
 				break;
 		}
 		this.geolocaltionErrMsg = msg;
-		console.info(this.geolocaltionErrMsg);
-		this.geoposition = [-1, -1];
-		return this._getWeatherAndSubscribe(this.geoposition);
+		this.latLonArr = [-1, -1];
+		return this._getWeatherAndSubscribe(this.latLonArr);
 	}
 
 	refresh() {
 		if (!this.weatherOverView) return;
-		return this._getWeatherAndSubscribe(this.geoposition);
-
+		this.isRefreshing = true;
+		return this._getWeatherAndSubscribe(this.latLonArr);
 	}
+
+	ngOnDestroy() {
+		this.subscription.unsubscribe();
+	}
+
 	_getWeatherAndSubscribe([lat, lon]) {
 		this.weatherOverView = null;
 		this.isGettingGeo = false;
-		this.refreshAnimation = 'spin';
+
 		let randomCityText = '';
 		if (lat === -1 && lon === -1) {
 			randomCityText = ' of A Major Random City';
@@ -113,8 +112,7 @@ export class AppComponent implements OnInit {
 				console.log(data);
 				setTimeout(() => {
 					this.weatherOverView = data;
-					this.keysOfWeatherOverView = Object.keys(data);
-					this.refreshAnimation = '';
+					this.isRefreshing = false;
 				}, this.actionDelayed);
 			});
 	}
